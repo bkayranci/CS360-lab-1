@@ -49,6 +49,10 @@ int main(int argc, char **argv)
             }
             else {
                 f = (Person *) tmp->val.v;
+                if (f->sex && strcmp(f->sex, "F") != 0) {
+                    printf("Error, graph has cycles\n");
+                    exit(1);
+                }
             }
             f->father = p;
             insert_child(f, p->children);
@@ -60,6 +64,10 @@ int main(int argc, char **argv)
             tmp = jrb_find_str(people, name);
             if (tmp == NULL) {
                 f = new_person(name, people);
+                if (f->sex && strcmp(f->sex, "M") != 0 ) {
+                    printf("Error, graph has cycles\n");
+                    exit(1);
+                }
             }
             else {
                 f = (Person *) tmp->val.v;
