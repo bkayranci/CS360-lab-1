@@ -146,6 +146,8 @@ int main(int argc, char **argv)
         }
     }
     print_tree(people, out);
+
+    // Basarili calisti
     return 0;
 }
 
@@ -167,21 +169,21 @@ int is_cycle(Person *p)
     Dllist tmp;
     Person *child;
     if (p->visited == 1) {
-        return 0;
+        return FALSE;
     }
     if (p->visited == 2) {
-        return 1;
+        return TRUE;
     }
     p->visited = 2;
     dll_traverse(tmp, p->children)
     {
         child = (Person *) tmp->val.v;
         if (is_cycle(child)) {
-            return 1;
+            return TRUE;
         }
     }
     p->visited = 1;
-    return 0;
+    return FALSE;
 }
 void print_tree(JRB people, Out *out)
 {      

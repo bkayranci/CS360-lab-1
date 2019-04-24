@@ -1,12 +1,15 @@
 # CS360-lab-1
 http://web.eecs.utk.edu/~plank/plank/classes/cs360/360/labs/lab1/index.html
 
-## Installation
+## INSTALLATION
 ```
 git clone https://github.com/bkayranci/CS360-lab-1.git --recurse-submodules
 cd CS360-lab-1
 make
 ```
+
+## SUBMODULES
+`libfdr` - https://github.com/josborn8/libfdr.git
 
 ## RUN
 ```
@@ -18,7 +21,7 @@ make
 If you want to print screen (`stdout` and `stderr`), run with `-w` flag.
 
 ## TEST FILES
-Test files are located in the fams directory.
+Test files are located in the `fams` directory.
 
 ## RUN TESTS
 - run-fam1
