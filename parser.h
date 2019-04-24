@@ -15,7 +15,7 @@ typedef struct
     Dllist children; // *People
     void *mother; // *People
     void *father; // *People
-    int visited; // 0 for not visited, 1 for visited, usefull for BFS and DFS
+    int visited; // Arama algoritmalari icin gerekli
 } Person;
 
 typedef struct out

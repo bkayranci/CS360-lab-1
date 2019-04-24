@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 
     if (argc < 2)
     {
-        fprintf(out->error, "usage: ./parser family filename\n");
+        fprintf(out->error, "usage: ./parser FILENAME\n");
         exit(1);
     }
     people = make_jrb();
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                fprintf(out->error, "Error, only M or F can be read for sex\n");
+                fprintf(out->error, "SEX must be only: M or F\n");
                 exit(1);
             }
         }
@@ -141,13 +141,15 @@ int main(int argc, char **argv)
         // Cycle var durumunu kontrol et
         if(is_cycle(p) == 1)
         {
-            fprintf(out->error, "Error, graph has cycles\n");
+            fprintf(out->error, "ERROR: cycle detected\n");
             exit(1);
         }
     }
     print_tree(people, out);
     return 0;
 }
+
+// Yeni Person olustur ve geri dondur
 Person *new_person(char *name, JRB people)
 {
     Person *p;
@@ -158,6 +160,8 @@ Person *new_person(char *name, JRB people)
     jrb_insert_str(people, name, new_jval_v((void *) p));
     return p;
 }
+
+// cycle olup olmadigini kontrol et
 int is_cycle(Person *p)
 {
     Dllist tmp;
@@ -209,14 +213,9 @@ void print_tree(JRB people, Out *out)
             motherName = mother->name;
         }
         fprintf(out->success, "%s \n", p->name);
-        // printf("%s \n", p->name);
         if(p->sex != NULL) {
-            // printf(" Sex: %s\n", p->sex);
             fprintf(out->success, " Sex: %s\n", p->sex);
         }
-        // printf(" Father: %s\n", fatherName);
-        // printf(" Mother: %s\n", motherName);
-        // printf(" Children:");
         fprintf(out->success, " Father: %s\n", fatherName);
         fprintf(out->success, " Mother: %s\n", motherName);
         fprintf(out->success, " Children:");
@@ -225,18 +224,17 @@ void print_tree(JRB people, Out *out)
             dll_traverse(children, p->children)
             {
                 child = (Person *) children->val.v;
-                // printf("\n %s", child->name);
                 fprintf(out->success, "\n %s", child->name);
             }
-            // printf("\n\n");
             fprintf(out->success, "\n\n");
         }
         else {
-            // printf("None\n\n");
             fprintf(out->success, "None\n\n");
         }
     }
 }
+
+// tam ismini oku
 char *get_name(IS is) {
     char *name;
     int nsize, i;
@@ -254,18 +252,20 @@ char *get_name(IS is) {
 
     return name;
 }
+
+// child ekle
 void insert_child(Person *p, Dllist children)
 {
     Dllist search;
     Person *tmp;
     int found;
-    //check if the list is empty, and if so automatically insert child
+    // children bossa ekle
     if (dll_empty(children) == 1) {
         dll_append(children, new_jval_v(p));
     }
     else
     {
-        //The list is not empty, so check to see if the child is already in the list
+        // children listesinde zaten ekli degilse ekle
         dll_traverse(search, children)
         {
             tmp = (Person *) search->val.v;
@@ -279,6 +279,7 @@ void insert_child(Person *p, Dllist children)
     }
 }
 
+// Program verilen flag ile calistirilmis mi
 int has_flag (char *flag, int argc, char **argv){
    int idx = 0;
 
