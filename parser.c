@@ -2,15 +2,35 @@
 
 int main(int argc, char **argv)
 {
+    Out *out;
+    out = malloc(sizeof(Out) * 1);
+    
+    // flag var mi
+    if (has_flag("-w", argc, argv) != TRUE) {
+        char *success, *error;
+        printf("Enter filename if success: ");
+        scanf("%ms", &success);
+        printf("\nEnter filename if error: ");
+        scanf("%ms", &error);
+        
+        out->success = fopen(success, "w");
+        out->error = fopen(error, "w");
+    } else {
+        out->success = stdout;
+        out->error = stderr;
+    }
+    
+    
     JRB people, tmp;
     IS is;
-    Person *p; //stands for person
-    Person *f; //stands for family
+    Person *p;
+    Person *f;
     char *name;
-    char *option; //PERSON, FATHER, MOTHER etc...
-    if (argc != 2)
+    char *option;
+
+    if (argc < 2)
     {
-        fprintf(stderr, "usage: ./famtree filename\n");
+        fprintf(out->error, "usage: ./parser family filename\n");
         exit(1);
     }
     people = make_jrb();
@@ -20,7 +40,7 @@ int main(int argc, char **argv)
         perror(argv[1]);
         exit(1);
     }
-
+    // Her satiri gez
     while(get_line(is) >= 0)
     {
         if ( is->NF == 0 ) {
@@ -28,10 +48,11 @@ int main(int argc, char **argv)
         }
 
         option = strdup(is->fields[0]);
-        //fill out Person properties based on first field read of each line
+        
+        // Her option icin kosul uygula
         if (strcmp(option, "PERSON")== 0)
         {
-            name = strdup(getName(is));
+            name = strdup(get_name(is));
             tmp = jrb_find_str(people, name);
             if (tmp == NULL) {
                 p = new_person(name, people);
@@ -42,17 +63,13 @@ int main(int argc, char **argv)
         }
         else if (strcmp(option, "FATHER_OF") == 0)
         {
-            name = strdup(getName(is));
+            name = strdup(get_name(is));
             tmp = jrb_find_str(people, name);
             if (tmp == NULL) {
                 f = new_person(name, people);
             }
             else {
                 f = (Person *) tmp->val.v;
-                if (f->sex && strcmp(f->sex, "F") != 0) {
-                    printf("Error, graph has cycles\n");
-                    exit(1);
-                }
             }
             f->father = p;
             insert_child(f, p->children);
@@ -60,14 +77,10 @@ int main(int argc, char **argv)
         }
         else if (strcmp(option, "MOTHER_OF") == 0)
         {
-            name = strdup(getName(is));
+            name = strdup(get_name(is));
             tmp = jrb_find_str(people, name);
             if (tmp == NULL) {
                 f = new_person(name, people);
-                if (f->sex && strcmp(f->sex, "M") != 0 ) {
-                    printf("Error, graph has cycles\n");
-                    exit(1);
-                }
             }
             else {
                 f = (Person *) tmp->val.v;
@@ -78,7 +91,7 @@ int main(int argc, char **argv)
         }
         else if (strcmp(option, "FATHER") == 0)
         {
-            name = strdup(getName(is));
+            name = strdup(get_name(is));
             tmp = jrb_find_str(people, name);
             if (tmp == NULL) {
                 f = new_person(name, people);
@@ -92,7 +105,7 @@ int main(int argc, char **argv)
         }
         else if (strcmp(option, "MOTHER") == 0)
         {
-            name = strdup(getName(is));
+            name = strdup(get_name(is));
             tmp = jrb_find_str(people, name);
             if (tmp == NULL) {
                 f = new_person(name, people);
@@ -114,20 +127,25 @@ int main(int argc, char **argv)
             }
             else
             {
-                printf("Error, only M or F can be read for sex\n");
+                fprintf(out->error, "Error, only M or F can be read for sex\n");
+                exit(1);
             }
         }
     }
+
+    // Tum agaci dolas
     jrb_traverse(tmp, people)
     {
         p = (Person *) tmp->val.v;
-        if(is_desc(p) == 1)
+        
+        // Cycle var durumunu kontrol et
+        if(is_cycle(p) == 1)
         {
-            printf("Error, graph has cycles\n");
+            fprintf(out->error, "Error, graph has cycles\n");
             exit(1);
         }
     }
-    print_fam(people);
+    print_tree(people, out);
     return 0;
 }
 Person *new_person(char *name, JRB people)
@@ -140,7 +158,7 @@ Person *new_person(char *name, JRB people)
     jrb_insert_str(people, name, new_jval_v((void *) p));
     return p;
 }
-int is_desc(Person *p)
+int is_cycle(Person *p)
 {
     Dllist tmp;
     Person *child;
@@ -154,15 +172,15 @@ int is_desc(Person *p)
     dll_traverse(tmp, p->children)
     {
         child = (Person *) tmp->val.v;
-        if (is_desc(child)) {
+        if (is_cycle(child)) {
             return 1;
         }
     }
     p->visited = 1;
     return 0;
 }
-void print_fam(JRB people)
-{
+void print_tree(JRB people, Out *out)
+{      
     char *motherName;
     char *fatherName;
     Person *mother;
@@ -190,28 +208,36 @@ void print_fam(JRB people)
         {
             motherName = mother->name;
         }
-        printf("%s \n", p->name);
+        fprintf(out->success, "%s \n", p->name);
+        // printf("%s \n", p->name);
         if(p->sex != NULL) {
-            printf(" Sex: %s\n", p->sex);
+            // printf(" Sex: %s\n", p->sex);
+            fprintf(out->success, " Sex: %s\n", p->sex);
         }
-        printf(" Father: %s\n", fatherName);
-        printf(" Mother: %s\n", motherName);
-        printf(" Children:");
+        // printf(" Father: %s\n", fatherName);
+        // printf(" Mother: %s\n", motherName);
+        // printf(" Children:");
+        fprintf(out->success, " Father: %s\n", fatherName);
+        fprintf(out->success, " Mother: %s\n", motherName);
+        fprintf(out->success, " Children:");
         if(dll_empty(p->children) != 1)
         {
             dll_traverse(children, p->children)
             {
                 child = (Person *) children->val.v;
-                printf("\n %s", child->name);
+                // printf("\n %s", child->name);
+                fprintf(out->success, "\n %s", child->name);
             }
-            printf("\n\n");
+            // printf("\n\n");
+            fprintf(out->success, "\n\n");
         }
         else {
-            printf("None\n\n");
+            // printf("None\n\n");
+            fprintf(out->success, "None\n\n");
         }
     }
 }
-char *getName(IS is) {
+char *get_name(IS is) {
     char *name;
     int nsize, i;
     nsize = strlen(is->fields[1]);
@@ -251,4 +277,15 @@ void insert_child(Person *p, Dllist children)
             dll_append(children, new_jval_v(p));
         }
     }
+}
+
+int has_flag (char *flag, int argc, char **argv){
+   int idx = 0;
+
+   for (idx = 1; idx < argc;  idx++) {
+       if (strcmp(argv[idx], flag) == 0) {
+          return TRUE;
+       }
+    }
+    return FALSE;
 }
